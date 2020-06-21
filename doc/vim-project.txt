@@ -1,0 +1,13 @@
+vim-project.txt    For acristoffers/vim-project Last change: 2020 Jun 20
+
+Manages projects, like emacs. Only three functions:
+
+:ProjectAdd            (`<leader>pa`) adds the current directory* to the list of
+                       projects.
+
+:ProjectRemove         (`<leader>pr`) remove the current directory* from the
+                       list of projects.
+
+:ProjectOpen           (`<leader>po`) opens a selection list so you can choose a
+                       project. Vim will cd to it, delete all buffers, and run
+                       `Files` if fzf is installed or `Explore` otherwise.
