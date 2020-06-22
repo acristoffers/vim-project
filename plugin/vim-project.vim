@@ -1,6 +1,6 @@
 " project.vim - Manages projects
 " Maintainer:   Álan Crístoffer <http://acristoffers.me>
-" Version:      1.0.0
+" Version:      1.0.1
 
 if has("win32") || has ("win64")
     let $VIMHOME = $VIM."/vimfiles"
@@ -18,9 +18,9 @@ function! s:FindCVS()
     end
 endfun
 
-function! s:ProjectSave()
+function! s:ProjectSave(projects)
     execute 'redir! > ' . $VIMHOME . "/projects.paths"
-    for path in s:projects
+    for path in a:projects
         silent echo path
     endfor
     execute 'redir END'
@@ -39,46 +39,47 @@ endfun
 
 function! s:ProjectAdd()
     let cwd = s:FindCVS()
+    let projects = s:ProjectLoad()
 
     let found = 0
-    for path in s:projects
+    for path in projects
         if path == cwd
             let found = 1
         end
     endfor
 
     if found == 0
-        call add(s:projects, cwd)
+        call add(projects, cwd)
     end
 
-    call s:ProjectSave()
+    call s:ProjectSave(projects)
 endfun
 
 function! s:ProjectRemove()
     let cwd = s:FindCVS()
 
     let projects = []
-    for path in s:projects
+    for path in s:ProjectLoad()
         if path != cwd
             call add(projects, path)
         end
     endfor
 
-    let s:projects = projects
-    call s:ProjectSave()
+    call s:ProjectSave(projects)
 endfun
 
 function! s:ProjectList()
+    let projects = s:ProjectLoad()
     let options = []
     let c = 1
-    for path in s:projects
+    for path in projects
         call add(options, c . '. ' . path)
         let c += 1
     endfor
 
     let option = inputlist(options)
     if option != 0
-        let path = get(s:projects, option-1, '')
+        let path = get(projects, option-1, '')
         if strlen(path) > 0
             call s:ProjectOpen(path)
         end
@@ -94,8 +95,6 @@ function! s:ProjectOpen(path)
         execute 'Explore'
     endif
 endfun
-
-let s:projects = s:ProjectLoad()
 
 nnoremap <leader>pa :ProjectAdd<CR>
 nnoremap <leader>pr :ProjectRemove<CR>
