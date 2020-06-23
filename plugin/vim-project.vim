@@ -1,82 +1,42 @@
 " project.vim - Manages projects
 " Maintainer:   Álan Crístoffer <http://acristoffers.me>
-" Version:      1.0.1
+" Version:      1.0.2
 
-if has("win32") || has ("win64")
-    let $VIMHOME = $VIM."/vimfiles"
-else
-    let $VIMHOME = $HOME."/.vim"
-endif
+function! s:vimhome()
+    return (has("win32") || has ("win64")) ? $VIM."/vimfiles" : $HOME."/.vim"
+endfun
+
+function! s:pfile()
+    return s:vimhome() . "/projects.paths"
+endfun
 
 function! s:FindCVS()
-    let cwd = getcwd()
     let git = system('git rev-parse --show-toplevel')
-    if git =~ "fatal:"
-        return cwd
-    else
-        return git
-    end
+    return trim(git =~ "fatal:" ? getcwd() : git)
 endfun
 
 function! s:ProjectSave(projects)
-    execute 'redir! > ' . $VIMHOME . "/projects.paths"
-    for path in a:projects
-        silent echo path
-    endfor
-    execute 'redir END'
+    call writefile(a:projects, s:pfile())
 endfun
 
 function! s:ProjectLoad()
-    let lines = readfile($VIMHOME . "/projects.paths")
-    let paths = []
-    for line in lines
-        if strlen(line) > 0
-            call add(paths, line)
-        end
-    endfor
-    return paths
+    return filter(readfile(s:pfile()), 'strlen(v:val) > 0')
 endfun
 
 function! s:ProjectAdd()
-    let cwd = s:FindCVS()
     let projects = s:ProjectLoad()
-
-    let found = 0
-    for path in projects
-        if path == cwd
-            let found = 1
-        end
-    endfor
-
-    if found == 0
-        call add(projects, cwd)
-    end
-
-    call s:ProjectSave(projects)
+    call add(projects, s:FindCVS())
+    call s:ProjectSave(uniq(sort(projects)))
 endfun
 
 function! s:ProjectRemove()
     let cwd = s:FindCVS()
-
-    let projects = []
-    for path in s:ProjectLoad()
-        if path != cwd
-            call add(projects, path)
-        end
-    endfor
-
-    call s:ProjectSave(projects)
+    call s:ProjectSave(filter(s:ProjectLoad(), 'v:val != cwd'))
 endfun
 
 function! s:ProjectList()
     let projects = s:ProjectLoad()
-    let options = []
-    let c = 1
-    for path in projects
-        call add(options, c . '. ' . path)
-        let c += 1
-    endfor
-
+    let options = map(copy(projects), "(v:key+1) . ') ' . v:val")
     let option = inputlist(options)
     if option != 0
         let path = get(projects, option-1, '')
