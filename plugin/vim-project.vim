@@ -20,7 +20,12 @@ function! s:ProjectSave(projects)
 endfun
 
 function! s:ProjectLoad()
-    return filter(readfile(s:pfile()), 'strlen(v:val) > 0')
+    let file = s:pfile()
+    if filereadable(file)
+        return filter(map(readfile(file), 'trim(v:val)'), 'strlen(v:val) > 0')
+    else
+        return []
+    endif
 endfun
 
 function! s:ProjectAdd()
