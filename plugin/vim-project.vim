@@ -39,7 +39,14 @@ function! s:ProjectRemove()
     call s:ProjectSave(filter(s:ProjectLoad(), 'v:val != cwd'))
 endfun
 
+function! s:ProjectClean()
+    let projects = copy(s:ProjectLoad())
+    call filter(projects, 'isdirectory(v:val) > 0')
+    call s:ProjectSave(projects)
+endfun
+
 function! s:ProjectList()
+    call s:ProjectClean()
     let projects = s:ProjectLoad()
     let options = map(copy(projects), "(v:key+1) . ') ' . v:val")
     let option = inputlist(options)
