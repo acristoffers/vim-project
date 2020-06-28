@@ -1,6 +1,31 @@
 " project.vim - Manages projects
+" Plugin:       https://github.com/acristoffers/vim-project
 " Maintainer:   Álan Crístoffer <http://acristoffers.me>
-" Version:      1.0.2
+" Version:      1.0.3
+
+" The MIT License (MIT)
+"
+" Copyright (c) 2020 Álan Crístoffer
+"
+" Permission is hereby granted, free of charge, to any person obtaining a copy
+" of this software and associated documentation files (the 'Software'), to deal
+" in the Software without restriction, including without limitation the rights
+" to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+" copies of the Software, and to permit persons to whom the Software is
+" furnished to do so, subject to the following conditions:
+"
+" The above copyright notice and this permission notice shall be included in all
+" copies or substantial portions of the Software.
+"
+" THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+" AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+" OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+" SOFTWARE.
+
+if exists('g:loaded_vim_project') | finish | endif
 
 function! s:vimhome()
     return (has("win32") || has ("win64")) ? $VIM."/vimfiles" : $HOME."/.vim"
@@ -48,12 +73,17 @@ endfun
 function! s:ProjectList()
     call s:ProjectClean()
     let projects = s:ProjectLoad()
-    let options = map(copy(projects), "(v:key+1) . ') ' . v:val")
-    let option = inputlist(options)
-    if option != 0
-        let path = get(projects, option-1, '')
-        if strlen(path) > 0
-            call s:ProjectOpen(path)
+    if has('nvim')
+        let g:vim_project_paths = projects
+        lua require'vim-project'.open_floating_window()
+    else
+        let options = map(copy(projects), "(v:key+1) . ') ' . v:val")
+        let option = inputlist(options)
+        if option != 0
+            let path = get(projects, option-1, '')
+            if strlen(path) > 0
+                call s:ProjectOpen(path)
+            end
         end
     end
 endfun
@@ -68,10 +98,12 @@ function! s:ProjectOpen(path)
     endif
 endfun
 
-nnoremap <leader>pa :ProjectAdd<CR>
-nnoremap <leader>pr :ProjectRemove<CR>
-nnoremap <leader>po :ProjectOpen<CR>
+nnoremap <silent> <leader>pa :ProjectAdd<CR>
+nnoremap <silent> <leader>pr :ProjectRemove<CR>
+nnoremap <silent> <leader>po :ProjectOpen<CR>
 
 command! -bar ProjectAdd    :call s:ProjectAdd()
 command! -bar ProjectRemove :call s:ProjectRemove()
 command! -bar ProjectOpen   :call s:ProjectList()
+
+let g:loaded_vim_project = 1
