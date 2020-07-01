@@ -1,7 +1,7 @@
 " project.vim - Manages projects
 " Plugin:       https://github.com/acristoffers/vim-project
 " Maintainer:   Álan Crístoffer <http://acristoffers.me>
-" Version:      1.0.3
+" Version:      1.0.4
 
 " The MIT License (MIT)
 "
